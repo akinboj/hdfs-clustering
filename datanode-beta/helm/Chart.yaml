@@ -1,0 +1,5 @@
+---
+name: pegacorn-hadoop-clustering-datanodes
+version: 1.0.0-SNAPSHOT
+description: Pegacorn Hadoop Clustering
+icon: img/icons/camel.svg
