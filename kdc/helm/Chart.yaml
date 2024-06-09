@@ -1,0 +1,5 @@
+---
+name: pegacorn-fhirplace-kerberos-server
+version: 1.0.0-SNAPSHOT
+description: Pegacorn Fhirplace KDC
+icon: img/icons/camel.svg
