@@ -30,6 +30,7 @@ RUN mkdir -p /etc/security/keytabs
 RUN mkdir -p /etc/hadoop/ssl
 RUN chmod -R 444 /etc/hadoop/ssl
 COPY ssl-server.xml /etc/hadoop/ssl-server.xml
+COPY ssl-client.xml /etc/hadoop/ssl-client.xml
 
 ARG IMAGE_BUILD_TIMESTAMP
 ENV IMAGE_BUILD_TIMESTAMP=${IMAGE_BUILD_TIMESTAMP}

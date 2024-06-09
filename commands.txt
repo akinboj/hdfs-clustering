@@ -40,7 +40,7 @@ Dec 04 16:32:48 nodeprivnet krb5kdc[19](info): TGS_REQ (8 etypes {18 17 20 19 16
 # In Firefox, set cookie -- it should be similar to the below:
 document.cookie="hadoop.auth=u=nn&p=nn/pegacorn-fhirplace-namenode-0.pegacorn-fhirplace-namenode.site-a.svc.cluster.local@PEGACORN-FHIRPLACE-AUDIT.LOCAL&t=kerberos&e=1638673503737&s=yx0JsTJPLypoPf3+WEhsZpSYCqTgePKdQS+HMCxmsT8=; path=/; Secure"
 
-URL === https://pegacorn-fhirplace-namenode.site-a:9871
+URL === https://pegacorn-fhirplace-namenode.site-a:32410
 
 # Datanode(s) Deployment
 # Retrieve CLUSTER-IP of NameNode service
@@ -54,5 +54,8 @@ docker build --rm --build-arg IMAGE_BUILD_TIMESTAMP="%date% %time%" -t pegacorn-
 helm upgrade pegacorn-fhirplace-datanode-beta-site-a --install --namespace site-a --set serviceName=pegacorn-fhirplace-datanode-beta,imagePullPolicy=Never,namenodeHost=pegacorn-fhirplace-namenode-0.pegacorn-fhirplace-namenode.site-a.svc.cluster.local,hostPathDatanode=/Users/yemie/dev/data/hadoop-datanode-beta,hostPathKeytab=/Users/yemie/dev/data/kdc-keytab,hostPathConfig=/Users/yemie/dev/data/certificates,imageTag=1.0.0-snapshot,numOfPods=1 helm
 
 # Avoid a URL re-direct
-https://pegacorn-fhirplace-datanode-alpha.site-a:9865/datanode.html
-https://pegacorn-fhirplace-datanode-beta.site-a:9865/datanode.html
+https://pegacorn-fhirplace-datanode-alpha.site-a:32510/datanode.html
+" HTTP 401 error - authentication required ". This is expected and confirms the DFS cannot be accessed without adequate SPNEGO authentication.
+ <Use same cookie from above>
+
+https://pegacorn-fhirplace-datanode-beta.site-a:32610/datanode.html
