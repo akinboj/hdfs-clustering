@@ -20,7 +20,7 @@ helm upgrade pegacorn-fhirplace-kdcserver-site-a --install --namespace site-a --
 
 docker build --rm --build-arg IMAGE_BUILD_TIMESTAMP="%date% %time%" -t pegacorn-fhirplace-namenode:1.0.0-snapshot --file Dockerfile .
 
-helm upgrade pegacorn-fhirplace-namenode-site-a --install --namespace site-a --set serviceName=pegacorn-fhirplace-namenode,imagePullPolicy=Never,hostPathNamenode=/Users/yemie/dev/data/hadoop-namenode,hostPathKeytab=/Users/yemie/dev/data/kdc-keytab,hostPathConfig=/Users/yemie/dev/data/certificates,clusterName=Pegacorn,imageTag=1.0.0-snapshot,numOfPods=1 helm
+helm upgrade pegacorn-fhirplace-namenode-site-a --install --namespace site-a --set serviceName=pegacorn-fhirplace-namenode,imagePullPolicy=Never,hostPathNamenode=/Users/yemie/dev/data/hadoop-namenode,hostPathKeytab=/Users/yemie/dev/data/kdc-keytab,hostPathConfig=/Users/yemie/dev/data/certificates,clusterName=Integration,imageTag=1.0.0-snapshot,numOfPods=1 helm
 
 # Kerberos Enabled cluster 
 # To view the Namenode Web UI (https://pegacorn-fhirplace-namenode.site-a:9871) - you should get a " HTTP 401 error - authentication required ". This is expected and confirms the DFS cannot be accessed without adequate SPNEGO authentication.
@@ -36,10 +36,10 @@ https://github.com/curl/curl-docker/issues/51
 
 # Cookies are manually set in the browser because SPNEGO auth does not recognise the stateless hostname of the pod (e.g. pegacorn-fhirplace-namenode-754857fd9b-mzdrk)
 " Error message:
-Dec 04 16:32:48 nodeprivnet krb5kdc[19](info): TGS_REQ (8 etypes {18 17 20 19 16 23 25 26}) 10.1.106.110: LOOKING_UP_SERVER: authtime 0,  nn/nodeprivnet@PEGACORN-FHIRPLACE-AUDIT.LOCAL for HTTP/pegacorn-fhirplace-namenode-754857fd9b-mzdrk@PEGACORN-FHIRPLACE-AUDIT.LOCAL, Server not found in Kerberos database "
+Dec 04 16:32:48 nodeprivnet krb5kdc[19](info): TGS_REQ (8 etypes {18 17 20 19 16 23 25 26}) 10.1.106.110: LOOKING_UP_SERVER: authtime 0,  root/nodeprivnet@PEGACORN-FHIRPLACE-AUDIT.LOCAL for HTTP/pegacorn-fhirplace-namenode-754857fd9b-mzdrk@PEGACORN-FHIRPLACE-AUDIT.LOCAL, Server not found in Kerberos database "
 
 # In Firefox, set cookie -- it should be similar to the below:
-document.cookie="hadoop.auth=u=nn&p=nn/pegacorn-fhirplace-namenode-0.pegacorn-fhirplace-namenode.site-a.svc.cluster.local@PEGACORN-FHIRPLACE-AUDIT.LOCAL&t=kerberos&e=1638673503737&s=yx0JsTJPLypoPf3+WEhsZpSYCqTgePKdQS+HMCxmsT8=; path=/; Secure"
+document.cookie="hadoop.auth=u=nn&p=root/pegacorn-fhirplace-namenode-0.pegacorn-fhirplace-namenode.site-a.svc.cluster.local@PEGACORN-FHIRPLACE-AUDIT.LOCAL&t=kerberos&e=1638673503737&s=yx0JsTJPLypoPf3+WEhsZpSYCqTgePKdQS+HMCxmsT8=; path=/; Secure"
 
 URL === 
 https://pegacorn-fhirplace-namenode.site-a:32410

@@ -39,11 +39,6 @@ RUN chmod -R 444 /etc/hadoop/ssl
 COPY ssl-server.xml /etc/hadoop/ssl-server.xml
 COPY ssl-client.xml /etc/hadoop/ssl-client.xml
 
-# Add jboss user to HDFS
-RUN addgroup pegacorn
-RUN adduser jboss --no-create-home --disabled-password --gecos ""
-RUN usermod -aG pegacorn jboss
-
 ARG IMAGE_BUILD_TIMESTAMP
 ENV IMAGE_BUILD_TIMESTAMP=${IMAGE_BUILD_TIMESTAMP}
 RUN echo IMAGE_BUILD_TIMESTAMP=${IMAGE_BUILD_TIMESTAMP}
@@ -54,4 +49,4 @@ EXPOSE 9000 9820 9871
 COPY run.sh /run.sh
 RUN chmod a+x /run.sh
 
-CMD ["/run.sh"]
+ENTRYPOINT ["/run.sh"]

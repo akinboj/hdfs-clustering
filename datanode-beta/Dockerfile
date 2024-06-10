@@ -28,11 +28,6 @@ ENV TZ="Australia/Sydney"
 
 RUN mkdir -p /hadoop/dfs/datanode
 
-# Add jboss user to HDFS
-RUN addgroup pegacorn
-RUN adduser jboss --no-create-home --disabled-password --gecos ""
-RUN usermod -aG pegacorn jboss
-
 # Kerberos configuration
 COPY krb5.conf /etc/krb5.conf
 RUN mkdir -p /var/log/kerberos

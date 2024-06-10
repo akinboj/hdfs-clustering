@@ -9,7 +9,7 @@ rm -f /hadoop/dfs/namenode/in_use.lock
 fi
 
 # kerberos client
-echo ${MY_POD_IP} ${KUBERNETES_SERVICE_NAME}.${KUBERNETES_NAMESPACE} >> /etc/hosts
+# echo ${MY_POD_IP} ${KUBERNETES_SERVICE_NAME}.${KUBERNETES_NAMESPACE} >> /etc/hosts
 sed -i "s/realmValue/${REALM}/g" /etc/krb5.conf
 sed -i "s/kdcserver/pegacorn-fhirplace-kdcserver-0.pegacorn-fhirplace-kdcserver.site-a/g" /etc/krb5.conf
 sed -i "s/kdcadmin/pegacorn-fhirplace-kdcserver-0.pegacorn-fhirplace-kdcserver.site-a/g" /etc/krb5.conf
@@ -29,7 +29,7 @@ openssl rand -base64 256 > ${CERTS}/hadoop-http-auth-signature-secret
 echo ""
 echo "==== Authenticating to realm ==============================================================="
 echo "============================================================================================"
-KRB5_TRACE=/dev/stderr kinit -f nn/pegacorn-fhirplace-namenode-0.pegacorn-fhirplace-namenode.site-a.svc.cluster.local@${REALM} -kt ${KEYTAB_DIR}/merged-krb5.keytab -V &
+KRB5_TRACE=/dev/stderr kinit -f root/pegacorn-fhirplace-namenode-0.pegacorn-fhirplace-namenode.site-a.svc.cluster.local@${REALM} -kt ${KEYTAB_DIR}/merged-krb5.keytab -V &
 wait -n
 echo "NameNode TGT completed."
 echo ""
@@ -93,20 +93,23 @@ if [ "$MULTIHOMED_NETWORK" = "1" ]; then
     addProperty /etc/hadoop/core-site.xml hadoop.http.authentication.signature.secret.file ${CERTS}/hadoop-http-auth-signature-secret
     # RPC Protection (Data transfer protection)
     addProperty /etc/hadoop/core-site.xml hadoop.rpc.protection privacy
+    # View file system
+    addProperty /etc/hadoop/core-site.xml fs.viewfs.overload.scheme.target.hdfs.impl org.apache.hadoop.hdfs.DistributedFileSystem
     # Other settings
-    addProperty /etc/hadoop/core-site.xml hadoop.user.group.static.mapping.overrides HTTP/pegacorn-fhirplace-namenode-0.pegacorn-fhirplace-namenode.site-a.svc.cluster.local@${REALM}=pegacorn
-    addProperty /etc/hadoop/core-site.xml hadoop.security.auth_to_local "RULE:[1:$1@$0](.*@PEGACORN-FHIRPLACE-AUDIT.LOCAL)s/.*$/jboss/ DEFAULT"
-    
+    addProperty /etc/hadoop/core-site.xml hadoop.user.group.static.mapping.overrides root=root
+    addProperty /etc/hadoop/core-site.xml hadoop.security.auth_to_local "RULE:[1:$1@$0](.*@PEGACORN-FHIRPLACE-AUDIT.LOCAL)s/.*$/root/ DEFAULT"
+    addProperty /etc/hadoop/core-site.xml hadoop.security.token.service.use_ip true
+
     # HDFS
     addProperty /etc/hadoop/hdfs-site.xml dfs.namenode.rpc-bind-host ${MY_POD_IP}
     addProperty /etc/hadoop/hdfs-site.xml dfs.namenode.servicerpc-bind-host ${MY_POD_IP}
     addProperty /etc/hadoop/hdfs-site.xml dfs.namenode.https-bind-host ${MY_POD_IP}
     addProperty /etc/hadoop/hdfs-site.xml dfs.namenode.datanode.registration.ip-hostname-check false
-    addProperty /etc/hadoop/hdfs-site.xml dfs.client.use.datanode.hostname true
+    addProperty /etc/hadoop/hdfs-site.xml dfs.client.use.datanode.hostname false
     addProperty /etc/hadoop/hdfs-site.xml dfs.datanode.use.datanode.hostname true
     addProperty /etc/hadoop/hdfs-site.xml dfs.encrypt.data.transfer true
     addProperty /etc/hadoop/hdfs-site.xml dfs.block.access.token.enable true
-    addProperty /etc/hadoop/hdfs-site.xml dfs.permissions.superusergroup jboss
+    addProperty /etc/hadoop/hdfs-site.xml dfs.permissions.superusergroup root
     addProperty /etc/hadoop/hdfs-site.xml dfs.replication 1
     addProperty /etc/hadoop/hdfs-site.xml dfs.datanode.address 0.0.0.0:9866
     addProperty /etc/hadoop/hdfs-site.xml dfs.datanode.https.address 0.0.0.0:9865
@@ -116,7 +119,7 @@ if [ "$MULTIHOMED_NETWORK" = "1" ]; then
     addProperty /etc/hadoop/hdfs-site.xml dfs.data.transfer.protection privacy
     addProperty /etc/hadoop/hdfs-site.xml dfs.encrypt.data.transfer.cipher.suites AES/CTR/NoPadding
     addProperty /etc/hadoop/hdfs-site.xml dfs.http.policy HTTPS_ONLY
-    addProperty /etc/hadoop/hdfs-site.xml dfs.namenode.kerberos.principal nn/pegacorn-fhirplace-namenode-0.pegacorn-fhirplace-namenode.site-a.svc.cluster.local@${REALM}
+    addProperty /etc/hadoop/hdfs-site.xml dfs.namenode.kerberos.principal root/pegacorn-fhirplace-namenode-0.pegacorn-fhirplace-namenode.site-a.svc.cluster.local@${REALM}
     addProperty /etc/hadoop/hdfs-site.xml dfs.namenode.keytab.file ${KEYTAB_DIR}/merged-krb5.keytab
     addProperty /etc/hadoop/hdfs-site.xml dfs.namenode.kerberos.internal.spnego.principal HTTP/pegacorn-fhirplace-namenode-0.pegacorn-fhirplace-namenode.site-a.svc.cluster.local@${REALM}
     addProperty /etc/hadoop/hdfs-site.xml dfs.web.authentication.kerberos.principal HTTP/pegacorn-fhirplace-namenode-0.pegacorn-fhirplace-namenode.site-a.svc.cluster.local@${REALM}

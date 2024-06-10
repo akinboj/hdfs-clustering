@@ -14,7 +14,7 @@ sed -i "s/kdcadmin/pegacorn-fhirplace-kdcserver-0.pegacorn-fhirplace-kdcserver.s
 
 echo "==== Authenticating to realm ==============================================================="
 echo "============================================================================================"
-KRB5_TRACE=/dev/stderr kinit -f dnb/pegacorn-fhirplace-datanode-beta-0.pegacorn-fhirplace-datanode-beta.site-a.svc.cluster.local@${REALM} -kt ${KEYTAB_DIR}/merged-krb5.keytab -V &
+KRB5_TRACE=/dev/stderr kinit -f root/pegacorn-fhirplace-datanode-beta-0.pegacorn-fhirplace-datanode-beta.site-a.svc.cluster.local@${REALM} -kt ${KEYTAB_DIR}/merged-krb5.keytab -V &
 wait -n
 echo "Datanode-beta TGT completed."
 echo ""
@@ -85,14 +85,17 @@ if [ "$MULTIHOMED_NETWORK" = "1" ]; then
     addProperty /etc/hadoop/core-site.xml hadoop.http.authentication.signature.secret.file ${CERTS}/hadoop-http-auth-signature-secret
     # RPC Protection (Data transfer protection)
     addProperty /etc/hadoop/core-site.xml hadoop.rpc.protection privacy
+    # View file system
+    addProperty /etc/hadoop/core-site.xml fs.viewfs.overload.scheme.target.hdfs.impl org.apache.hadoop.hdfs.DistributedFileSystem
     # Other settings
-    addProperty /etc/hadoop/core-site.xml hadoop.user.group.static.mapping.overrides HTTP/pegacorn-fhirplace-namenode-0.pegacorn-fhirplace-namenode.site-a.svc.cluster.local@${REALM}=pegacorn
-    addProperty /etc/hadoop/core-site.xml hadoop.security.auth_to_local "RULE:[1:$1@$0](.*@PEGACORN-FHIRPLACE-AUDIT.LOCAL)s/.*$/jboss/ DEFAULT"
+    addProperty /etc/hadoop/core-site.xml hadoop.user.group.static.mapping.overrides root=root
+    addProperty /etc/hadoop/core-site.xml hadoop.security.auth_to_local "RULE:[1:$1@$0](.*@PEGACORN-FHIRPLACE-AUDIT.LOCAL)s/.*$/root/ DEFAULT"
+    addProperty /etc/hadoop/core-site.xml hadoop.security.token.service.use_ip true
 
     # HDFS
     addProperty /etc/hadoop/hdfs-site.xml dfs.replication 1
-    addProperty /etc/hadoop/hdfs-site.xml dfs.permissions.superusergroup jboss
-    addProperty /etc/hadoop/hdfs-site.xml dfs.datanode.kerberos.principal dnb/_HOST@${REALM}
+    addProperty /etc/hadoop/hdfs-site.xml dfs.permissions.superusergroup root
+    addProperty /etc/hadoop/hdfs-site.xml dfs.datanode.kerberos.principal root/pegacorn-fhirplace-datanode-beta-0.pegacorn-fhirplace-datanode-beta.site-a.svc.cluster.local@${REALM}
     addProperty /etc/hadoop/hdfs-site.xml dfs.datanode.keytab.file ${KEYTAB_DIR}/merged-krb5.keytab
     addProperty /etc/hadoop/hdfs-site.xml dfs.block.access.token.enable true
     addProperty /etc/hadoop/hdfs-site.xml dfs.datanode.address ${MY_POD_IP}:9866
