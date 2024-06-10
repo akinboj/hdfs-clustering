@@ -25,6 +25,7 @@ helm upgrade pegacorn-fhirplace-namenode-site-a --install --namespace site-a --s
 # Kerberos Enabled cluster 
 # To view the Namenode Web UI (https://pegacorn-fhirplace-namenode.site-a:9871) - you should get a " HTTP 401 error - authentication required ". This is expected and confirms the DFS cannot be accessed without adequate SPNEGO authentication.
 # To authenticate in the browser, execute curl command inside namenode pod to retrieve token credentials set by "hadoop.auth" (**currently it does not work in Alpine, however it works in the Debian based image)
+
 curl -i --insecure --negotiate -u : https://pegacorn-fhirplace-namenode.site-a:9871/webhdfs/v1/?op=LISTSTATUS
 
 Alpine error:
@@ -40,7 +41,8 @@ Dec 04 16:32:48 nodeprivnet krb5kdc[19](info): TGS_REQ (8 etypes {18 17 20 19 16
 # In Firefox, set cookie -- it should be similar to the below:
 document.cookie="hadoop.auth=u=nn&p=nn/pegacorn-fhirplace-namenode-0.pegacorn-fhirplace-namenode.site-a.svc.cluster.local@PEGACORN-FHIRPLACE-AUDIT.LOCAL&t=kerberos&e=1638673503737&s=yx0JsTJPLypoPf3+WEhsZpSYCqTgePKdQS+HMCxmsT8=; path=/; Secure"
 
-URL === https://pegacorn-fhirplace-namenode.site-a:32410
+URL === 
+https://pegacorn-fhirplace-namenode.site-a:32410
 
 # Datanode(s) Deployment
 # Retrieve CLUSTER-IP of NameNode service

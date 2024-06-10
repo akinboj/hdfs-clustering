@@ -8,6 +8,16 @@ RUN apt-get update && \
         libpam-ccreds \
     && rm -rf /var/lib/apt/lists/*
 
+# Install multiple network diagnostic tools
+RUN apt-get update && \
+    apt-get install -y \
+    iputils-ping \
+    telnet \
+    net-tools \
+    traceroute \
+    dnsutils \
+    && rm -rf /var/lib/apt/lists/*  # Clean up to reduce layer size
+
 HEALTHCHECK CMD curl -f http://localhost:9864/ || exit 1
 
 ENV MULTIHOMED_NETWORK=1

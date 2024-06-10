@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 set -e
 
@@ -77,4 +77,4 @@ echo ""
 
 echo "========== KDC Server Configuration Successful ===================================="
 
-/usr/bin/supervisord -c /etc/supervisord.conf -n
+/usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf -n

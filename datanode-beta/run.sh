@@ -104,8 +104,8 @@ if [ "$MULTIHOMED_NETWORK" = "1" ]; then
     addProperty /etc/hadoop/hdfs-site.xml dfs.client.https.keystore.resource ssl-client.xml
     addProperty /etc/hadoop/hdfs-site.xml dfs.client.https.need-auth false
     addProperty /etc/hadoop/hdfs-site.xml dfs.encrypt.data.transfer true
-    addProperty /etc/hadoop/hdfs-site.xml dfs.client.use.datanode.hostname true
-    addProperty /etc/hadoop/hdfs-site.xml dfs.datanode.use.datanode.hostname true
+    addProperty /etc/hadoop/hdfs-site.xml dfs.client.use.datanode.hostname false
+    addProperty /etc/hadoop/hdfs-site.xml dfs.datanode.use.datanode.hostname false
     addProperty /etc/hadoop/hdfs-site.xml dfs.data.transfer.protection privacy
     addProperty /etc/hadoop/hdfs-site.xml dfs.namenode.kerberos.internal.spnego.principal HTTP/pegacorn-fhirplace-namenode-0.pegacorn-fhirplace-namenode.site-a.svc.cluster.local@${REALM}
     addProperty /etc/hadoop/hdfs-site.xml dfs.web.authentication.kerberos.principal HTTP/pegacorn-fhirplace-namenode-0.pegacorn-fhirplace-namenode.site-a.svc.cluster.local@${REALM}

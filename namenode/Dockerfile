@@ -20,6 +20,16 @@ RUN apt-get update && \
         openssl \
     && rm -rf /var/lib/apt/lists/*
 
+# Install multiple network diagnostic tools
+RUN apt-get update && \
+    apt-get install -y \
+    iputils-ping \
+    telnet \
+    net-tools \
+    traceroute \
+    dnsutils \
+    && rm -rf /var/lib/apt/lists/*  # Clean up to reduce layer size
+
 # Kerberos configuration
 COPY krb5.conf /etc/krb5.conf
 RUN mkdir -p /var/log/kerberos
@@ -28,9 +38,6 @@ RUN mkdir -p /etc/hadoop/ssl
 RUN chmod -R 444 /etc/hadoop/ssl
 COPY ssl-server.xml /etc/hadoop/ssl-server.xml
 COPY ssl-client.xml /etc/hadoop/ssl-client.xml
-
-# Create http signature file
-# RUN openssl rand -base64 256 > /etc/hadoop/ssl/hadoop-http-auth-signature-secret
 
 # Add jboss user to HDFS
 RUN addgroup pegacorn
