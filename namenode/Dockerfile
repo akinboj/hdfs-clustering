@@ -17,7 +17,18 @@ RUN apt-get update && \
         krb5-user \
         libpam-krb5 \
         libpam-ccreds \
+        openssl \
     && rm -rf /var/lib/apt/lists/*
+
+# Install multiple network diagnostic tools
+RUN apt-get update && \
+    apt-get install -y \
+    iputils-ping \
+    telnet \
+    net-tools \
+    traceroute \
+    dnsutils \
+    && rm -rf /var/lib/apt/lists/*  # Clean up to reduce layer size
 
 # Kerberos configuration
 COPY krb5.conf /etc/krb5.conf
@@ -26,11 +37,7 @@ RUN mkdir -p /etc/security/keytabs
 RUN mkdir -p /etc/hadoop/ssl
 RUN chmod -R 444 /etc/hadoop/ssl
 COPY ssl-server.xml /etc/hadoop/ssl-server.xml
-
-# Add jboss user to HDFS
-RUN addgroup pegacorn
-RUN adduser jboss --no-create-home --disabled-password --gecos ""
-RUN usermod -aG pegacorn jboss
+COPY ssl-client.xml /etc/hadoop/ssl-client.xml
 
 ARG IMAGE_BUILD_TIMESTAMP
 ENV IMAGE_BUILD_TIMESTAMP=${IMAGE_BUILD_TIMESTAMP}
@@ -42,4 +49,4 @@ EXPOSE 9000 9820 9871
 COPY run.sh /run.sh
 RUN chmod a+x /run.sh
 
-CMD ["/run.sh"]
+ENTRYPOINT ["/run.sh"]

@@ -19,17 +19,16 @@ metadata:
 spec:
   ports:
   - name: namenode
-    port: 8020
+    port: 32412
     protocol: TCP
     targetPort: 8020
   - name: hadoop-web
-    port: 9871
+    port: 32410
     protocol: TCP
     targetPort: 9871
   selector:
     app: {{ .Values.serviceName }}
   type: {{ .Values.serviceType | default "LoadBalancer" }}
-  clusterIP: 10.109.183.187
   {{- if (.Values.loadBalancerIP) }} 
   loadBalancerIP: {{ .Values.loadBalancerIP }}
   {{- end }}

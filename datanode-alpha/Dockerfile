@@ -8,6 +8,16 @@ RUN apt-get update && \
         libpam-ccreds \
     && rm -rf /var/lib/apt/lists/*
 
+# Install multiple network diagnostic tools
+RUN apt-get update && \
+    apt-get install -y \
+    iputils-ping \
+    telnet \
+    net-tools \
+    traceroute \
+    dnsutils \
+    && rm -rf /var/lib/apt/lists/*  # Clean up to reduce layer size
+
 HEALTHCHECK CMD curl -f http://localhost:9864/ || exit 1
 
 ENV MULTIHOMED_NETWORK=1
@@ -18,11 +28,6 @@ ENV TZ="Australia/Sydney"
 
 RUN mkdir -p /hadoop/dfs/datanode
 
-# Add jboss user to HDFS
-RUN addgroup pegacorn
-RUN adduser jboss --no-create-home --disabled-password --gecos ""
-RUN usermod -aG pegacorn jboss
-
 # Kerberos configuration
 COPY krb5.conf /etc/krb5.conf
 RUN mkdir -p /var/log/kerberos
@@ -30,6 +35,7 @@ RUN mkdir -p /etc/security/keytabs
 RUN mkdir -p /etc/hadoop/ssl
 RUN chmod -R 444 /etc/hadoop/ssl
 COPY ssl-server.xml /etc/hadoop/ssl-server.xml
+COPY ssl-client.xml /etc/hadoop/ssl-client.xml
 
 ARG IMAGE_BUILD_TIMESTAMP
 ENV IMAGE_BUILD_TIMESTAMP=${IMAGE_BUILD_TIMESTAMP}

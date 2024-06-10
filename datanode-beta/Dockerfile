@@ -8,6 +8,16 @@ RUN apt-get update && \
         libpam-ccreds \
     && rm -rf /var/lib/apt/lists/*
 
+# Install multiple network diagnostic tools
+RUN apt-get update && \
+    apt-get install -y \
+    iputils-ping \
+    telnet \
+    net-tools \
+    traceroute \
+    dnsutils \
+    && rm -rf /var/lib/apt/lists/*  # Clean up to reduce layer size
+
 HEALTHCHECK CMD curl -f http://localhost:9864/ || exit 1
 
 ENV MULTIHOMED_NETWORK=1
@@ -17,11 +27,6 @@ ENV CERTS=/etc/hadoop/ssl
 ENV TZ="Australia/Sydney"
 
 RUN mkdir -p /hadoop/dfs/datanode
-
-# Add jboss user to HDFS
-RUN addgroup pegacorn
-RUN adduser jboss --no-create-home --disabled-password --gecos ""
-RUN usermod -aG pegacorn jboss
 
 # Kerberos configuration
 COPY krb5.conf /etc/krb5.conf

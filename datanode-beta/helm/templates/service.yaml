@@ -19,15 +19,15 @@ metadata:
 spec:
   ports:   
   - name: datanode
-    port: 9865
+    port: 32610
     protocol: TCP
     targetPort: 9865
   - name: data-transfer
-    port: 9866
+    port: 32611
     protocol: TCP
     targetPort: 9866
   - name: ipc-metadata
-    port: 9867
+    port: 32612
     protocol: TCP
     targetPort: 9867
   selector:
