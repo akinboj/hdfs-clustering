@@ -28,9 +28,10 @@ RUN apt-get update && \
     net-tools \
     traceroute \
     dnsutils \
+    procps \
     && rm -rf /var/lib/apt/lists/*  # Clean up to reduce layer size
 
-# Kerberos configuration
+# Kerberos and TLS configuration
 COPY krb5.conf /etc/krb5.conf
 RUN mkdir -p /var/log/kerberos
 RUN mkdir -p /etc/security/keytabs
@@ -42,6 +43,8 @@ COPY ssl-client.xml /etc/hadoop/ssl-client.xml
 ARG IMAGE_BUILD_TIMESTAMP
 ENV IMAGE_BUILD_TIMESTAMP=${IMAGE_BUILD_TIMESTAMP}
 RUN echo IMAGE_BUILD_TIMESTAMP=${IMAGE_BUILD_TIMESTAMP}
+
+ENV SERVER_ADDRESS=pegacorn-fhirplace-namenode-0.pegacorn-fhirplace-namenode.site-a.svc.cluster.local
 
 # Hadoop ports
 EXPOSE 9000 9820 9871

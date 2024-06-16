@@ -14,6 +14,16 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
         supervisor \
     && rm -rf /var/lib/apt/lists/*
 
+# Install multiple network diagnostic tools
+RUN apt-get update && \
+    apt-get install -y \
+    iputils-ping \
+    telnet \
+    net-tools \
+    traceroute \
+    dnsutils \
+    && rm -rf /var/lib/apt/lists/*  # Clean up to reduce layer size
+    
 ENV KEYTAB_DIR=/etc/security/keytabs
 ENV KRB_LOG_DIR=/var/log/kerberos
 ENV TZ=Australia/Sydney
