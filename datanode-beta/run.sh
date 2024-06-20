@@ -22,7 +22,7 @@ sed -i "s/kdcadmin/pegacorn-fhirplace-kdcserver-0.pegacorn-fhirplace-kdcserver.s
 
 echo "==== Authenticating to realm ==============================================================="
 echo "============================================================================================"
-KRB5_TRACE=/dev/stderr kinit -f root/${SERVER_ADDRESS}@${REALM} -kt ${KEYTAB_DIR}/dnb.service.keytab -V &
+KRB5_TRACE=/dev/stderr kinit -f bn/${SERVER_ADDRESS}@${REALM} -kt ${KEYTAB_DIR}/dnb.service.keytab -V &
 wait -n
 echo "Datanode-beta TGT completed."
 echo ""
@@ -97,12 +97,12 @@ if [ "$MULTIHOMED_NETWORK" = "1" ]; then
     # View file system
     addProperty /etc/hadoop/core-site.xml fs.viewfs.overload.scheme.target.hdfs.impl org.apache.hadoop.hdfs.DistributedFileSystem
     # Other settings
-    addProperty /etc/hadoop/core-site.xml hadoop.http.staticuser.user	root
-    addProperty /etc/hadoop/core-site.xml hadoop.security.auth_to_local DEFAULT
+    addProperty /etc/hadoop/core-site.xml hadoop.http.staticuser.user root
+    addProperty /etc/hadoop/core-site.xml hadoop.security.auth_to_local 'RULE:[2:$1/$2@$0]([ndbf]n/.*@REALM.TLD)s/.*/root/'
 
     # HDFS
     addProperty /etc/hadoop/hdfs-site.xml dfs.replication 1
-    addProperty /etc/hadoop/hdfs-site.xml dfs.datanode.kerberos.principal root/_HOST@${REALM}
+    addProperty /etc/hadoop/hdfs-site.xml dfs.datanode.kerberos.principal bn/_HOST@${REALM}
     addProperty /etc/hadoop/hdfs-site.xml dfs.datanode.keytab.file ${KEYTAB_DIR}/dnb.service.keytab
     addProperty /etc/hadoop/hdfs-site.xml dfs.block.access.token.enable true
     addProperty /etc/hadoop/hdfs-site.xml dfs.datanode.address ${SERVER_ADDRESS}:9866

@@ -45,14 +45,14 @@ kadmin.local -q "add_principal -randkey  root/pegacorn-fhirplace-namenode-0.pega
 kadmin.local -q "ktadd -norandkey -k nn.service.keytab root/pegacorn-fhirplace-namenode-0.pegacorn-fhirplace-namenode.site-a.svc.cluster.local"
 
 # Datanode alpha Keytab
-kadmin.local -q "add_principal -randkey  dna/pegacorn-fhirplace-datanode-alpha-0.pegacorn-fhirplace-datanode-alpha.site-a.svc.cluster.local@${REALM}"
-kadmin.local -q "ktadd -norandkey -k dna.service.keytab dna/pegacorn-fhirplace-datanode-alpha-0.pegacorn-fhirplace-datanode-alpha.site-a.svc.cluster.local"
+kadmin.local -q "add_principal -randkey  dn/pegacorn-fhirplace-datanode-alpha-0.pegacorn-fhirplace-datanode-alpha.site-a.svc.cluster.local@${REALM}"
+kadmin.local -q "ktadd -norandkey -k dna.service.keytab dn/pegacorn-fhirplace-datanode-alpha-0.pegacorn-fhirplace-datanode-alpha.site-a.svc.cluster.local"
 kadmin.local -q "add_principal -randkey  root/pegacorn-fhirplace-datanode-alpha-0.pegacorn-fhirplace-datanode-alpha.site-a.svc.cluster.local@${REALM}"
 kadmin.local -q "ktadd -norandkey -k dna.service.keytab root/pegacorn-fhirplace-datanode-alpha-0.pegacorn-fhirplace-datanode-alpha.site-a.svc.cluster.local"
 
 # Datanode beta Keytab
-kadmin.local -q "add_principal -randkey  dnb/pegacorn-fhirplace-datanode-beta-0.pegacorn-fhirplace-datanode-beta.site-a.svc.cluster.local@${REALM}"
-kadmin.local -q "ktadd -norandkey -k dnb.service.keytab dnb/pegacorn-fhirplace-datanode-beta-0.pegacorn-fhirplace-datanode-beta.site-a.svc.cluster.local"
+kadmin.local -q "add_principal -randkey  bn/pegacorn-fhirplace-datanode-beta-0.pegacorn-fhirplace-datanode-beta.site-a.svc.cluster.local@${REALM}"
+kadmin.local -q "ktadd -norandkey -k dnb.service.keytab bn/pegacorn-fhirplace-datanode-beta-0.pegacorn-fhirplace-datanode-beta.site-a.svc.cluster.local"
 kadmin.local -q "add_principal -randkey  root/pegacorn-fhirplace-datanode-beta-0.pegacorn-fhirplace-datanode-beta.site-a.svc.cluster.local@${REALM}"
 kadmin.local -q "ktadd -norandkey -k dnb.service.keytab root/pegacorn-fhirplace-datanode-beta-0.pegacorn-fhirplace-datanode-beta.site-a.svc.cluster.local"
 
@@ -65,8 +65,8 @@ kadmin.local -q "add_principal -randkey  HTTP/pegacorn-fhirplace-namenode.site-a
 kadmin.local -q "ktadd -norandkey -k http.service.keytab HTTP/pegacorn-fhirplace-namenode.site-a"
 
 # Client Keytab
-kadmin.local -q "add_principal -randkey  hdfs/pegacorn-fhirplace-bigdata-api-0.pegacorn-fhirplace-bigdata-api.site-a.svc.cluster.local@${REALM}"
-kadmin.local -q "ktadd -norandkey -k client.service.keytab hdfs/pegacorn-fhirplace-bigdata-api-0.pegacorn-fhirplace-bigdata-api.site-a.svc.cluster.local"
+kadmin.local -q "add_principal -randkey  fn/pegacorn-fhirplace-bigdata-api-0.pegacorn-fhirplace-bigdata-api.site-a.svc.cluster.local@${REALM}"
+kadmin.local -q "ktadd -norandkey -k client.service.keytab fn/pegacorn-fhirplace-bigdata-api-0.pegacorn-fhirplace-bigdata-api.site-a.svc.cluster.local"
 kadmin.local -q "add_principal -randkey  root/pegacorn-fhirplace-bigdata-api-0.pegacorn-fhirplace-bigdata-api.site-a.svc.cluster.local@${REALM}"
 kadmin.local -q "ktadd -norandkey -k client.service.keytab root/pegacorn-fhirplace-bigdata-api-0.pegacorn-fhirplace-bigdata-api.site-a.svc.cluster.local"
 echo ""

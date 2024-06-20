@@ -29,6 +29,7 @@ RUN apt-get update && \
     traceroute \
     dnsutils \
     procps \
+    tzdata \
     && rm -rf /var/lib/apt/lists/*  # Clean up to reduce layer size
 
 # Kerberos and TLS configuration
