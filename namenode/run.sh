@@ -36,7 +36,7 @@ openssl rand -base64 256 > ${CERTS}/hadoop-http-auth-signature-secret
 echo ""
 echo "==== Authenticating to realm ==============================================================="
 echo "============================================================================================"
-KRB5_TRACE=/dev/stderr kinit -f root/${SERVER_ADDRESS}@${REALM} -kt ${KEYTAB_DIR}/nn.service.keytab -V &
+KRB5_TRACE=/dev/stderr kinit -f nn/${SERVER_ADDRESS}@${REALM} -kt ${KEYTAB_DIR}/nn.service.keytab -V &
 wait -n
 echo "NameNode TGT completed."
 echo ""
@@ -105,7 +105,7 @@ if [ "$MULTIHOMED_NETWORK" = "1" ]; then
     addProperty /etc/hadoop/core-site.xml fs.viewfs.overload.scheme.target.hdfs.impl org.apache.hadoop.hdfs.DistributedFileSystem
     # Other settings
     addProperty /etc/hadoop/core-site.xml hadoop.http.staticuser.user	root
-    addProperty /etc/hadoop/core-site.xml hadoop.security.auth_to_local DEFAULT
+    addProperty /etc/hadoop/core-site.xml hadoop.security.auth_to_local 'RULE:[2:$1/$2@$0]([ndbf]n/.*@REALM.TLD)s/.*/root/'
 
     # HDFS
     addProperty /etc/hadoop/hdfs-site.xml dfs.namenode.rpc-bind-host ${SERVER_ADDRESS}
@@ -124,7 +124,7 @@ if [ "$MULTIHOMED_NETWORK" = "1" ]; then
     addProperty /etc/hadoop/hdfs-site.xml dfs.client.https.need-auth false
     addProperty /etc/hadoop/hdfs-site.xml dfs.data.transfer.protection privacy
     addProperty /etc/hadoop/hdfs-site.xml dfs.http.policy HTTPS_ONLY
-    addProperty /etc/hadoop/hdfs-site.xml dfs.namenode.kerberos.principal root/_HOST@${REALM}
+    addProperty /etc/hadoop/hdfs-site.xml dfs.namenode.kerberos.principal nn/_HOST@${REALM}
     addProperty /etc/hadoop/hdfs-site.xml dfs.namenode.keytab.file ${KEYTAB_DIR}/nn.service.keytab
     addProperty /etc/hadoop/hdfs-site.xml dfs.namenode.kerberos.internal.spnego.principal HTTP/_HOST@${REALM}
     addProperty /etc/hadoop/hdfs-site.xml dfs.web.authentication.kerberos.principal HTTP/_HOST@${REALM}

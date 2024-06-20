@@ -26,7 +26,7 @@ helm upgrade pegacorn-fhirplace-namenode-site-a --install --namespace site-a --s
 # To view the Namenode Web UI (https://pegacorn-fhirplace-namenode.site-a:32410) - you should get a " HTTP 401 error - authentication required ". This is expected and confirms the DFS cannot be accessed without adequate SPNEGO authentication.
 # To authenticate in the browser, execute curl command inside namenode pod to retrieve token credentials set by "hadoop.auth" (**currently it does not work in Alpine, however it works in the Debian based image)
 
-curl -i --insecure --negotiate -u : https://pegacorn-fhirplace-namenode.site-a:32410/webhdfs/v1/?op=LISTSTATUS
+###curl -i --insecure --negotiate -u : https://pegacorn-fhirplace-namenode.site-a:32410/webhdfs/v1/?op=LISTSTATUS
 curl -i --insecure --negotiate -u : https://pegacorn-fhirplace-namenode-0.pegacorn-fhirplace-namenode.site-a.svc.cluster.local:9871/webhdfs/v1/?op=LISTSTATUS
 
 Alpine error:

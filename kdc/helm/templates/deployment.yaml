@@ -65,7 +65,7 @@ spec:
             fieldRef:
               fieldPath: spec.serviceAccountName
         - name: REALM
-          value: PEGACORN-FHIRPLACE-AUDIT.LOCAL
+          value: REALM.TLD
         image: {{ .Values.dockerRepo }}pegacorn-fhirplace-kdcserver:{{ .Values.imageTag }}            
         imagePullPolicy: {{ .Values.imagePullPolicy | default "IfNotPresent" }}
         livenessProbe:

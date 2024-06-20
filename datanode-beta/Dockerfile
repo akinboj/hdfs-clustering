@@ -16,6 +16,7 @@ RUN apt-get update && \
     net-tools \
     traceroute \
     dnsutils \
+    tzdata \
     && rm -rf /var/lib/apt/lists/*  # Clean up to reduce layer size
 
 HEALTHCHECK CMD curl -f http://localhost:9864/ || exit 1
