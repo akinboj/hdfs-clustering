@@ -1,0 +1,5 @@
+---
+name: firefox-vnc-server
+version: 1.0.0-SNAPSHOT
+description: Firefox VNC Server
+icon: img/icons/camel.svg
