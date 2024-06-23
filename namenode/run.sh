@@ -117,6 +117,7 @@ if [ "$MULTIHOMED_NETWORK" = "1" ]; then
     addProperty /etc/hadoop/hdfs-site.xml dfs.encrypt.data.transfer true
     addProperty /etc/hadoop/hdfs-site.xml dfs.block.access.token.enable true
     addProperty /etc/hadoop/hdfs-site.xml dfs.replication 1
+    addProperty /etc/hadoop/hdfs-site.xml dfs.cluster.administrators *
     addProperty /etc/hadoop/hdfs-site.xml dfs.datanode.address 0.0.0.0:9866
     addProperty /etc/hadoop/hdfs-site.xml dfs.datanode.https.address 0.0.0.0:9865
     addProperty /etc/hadoop/hdfs-site.xml dfs.datanode.ipc.address 0.0.0.0:9867

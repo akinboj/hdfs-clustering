@@ -102,6 +102,7 @@ if [ "$MULTIHOMED_NETWORK" = "1" ]; then
 
     # HDFS
     addProperty /etc/hadoop/hdfs-site.xml dfs.replication 1
+    addProperty /etc/hadoop/hdfs-site.xml dfs.cluster.administrators *
     addProperty /etc/hadoop/hdfs-site.xml dfs.datanode.kerberos.principal bn/_HOST@${REALM}
     addProperty /etc/hadoop/hdfs-site.xml dfs.datanode.keytab.file ${KEYTAB_DIR}/dnb.service.keytab
     addProperty /etc/hadoop/hdfs-site.xml dfs.block.access.token.enable true

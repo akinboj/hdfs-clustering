@@ -40,7 +40,7 @@ https://github.com/curl/curl-docker/issues/51
 Dec 04 16:32:48 nodeprivnet krb5kdc[19](info): TGS_REQ (8 etypes {18 17 20 19 16 23 25 26}) 10.1.106.110: LOOKING_UP_SERVER: authtime 0,  root/nodeprivnet@PEGACORN-FHIRPLACE-AUDIT.LOCAL for HTTP/pegacorn-fhirplace-namenode-754857fd9b-mzdrk@PEGACORN-FHIRPLACE-AUDIT.LOCAL, Server not found in Kerberos database "
 
 # In Firefox, set cookie -- it should be similar to the below:
-document.cookie="hadoop.auth=u=nn&p=nn/pegacorn-fhirplace-namenode-0.pegacorn-fhirplace-namenode.site-a.svc.cluster.local@PEGACORN-FHIRPLACE-AUDIT.LOCAL&t=kerberos&e=1638673503737&s=yx0JsTJPLypoPf3+WEhsZpSYCqTgePKdQS+HMCxmsT8=; path=/; Secure"
+document.cookie="hadoop.auth=u=root&p=nn/pegacorn-fhirplace-namenode-0.pegacorn-fhirplace-namenode.site-a.svc.cluster.local@PEGACORN-FHIRPLACE-AUDIT.LOCAL&t=kerberos&e=1638673503737&s=yx0JsTJPLypoPf3+WEhsZpSYCqTgePKdQS+HMCxmsT8=; path=/; Secure"
 
 URL === 
 https://pegacorn-fhirplace-namenode.site-a:32410
@@ -62,3 +62,10 @@ https://pegacorn-fhirplace-datanode-alpha.site-a:32510/datanode.html
  <Use same cookie from above>
 
 https://pegacorn-fhirplace-datanode-beta.site-a:32610/datanode.html
+
+=============================================================================
+TDL: VNC Server
+
+docker build --rm --build-arg IMAGE_BUILD_TIMESTAMP="%date% %time%" -t firefox-vnc-server:1.0.0-snapshot --file Dockerfile .
+
+helm upgrade firefox-vnc-server-site-a --install --namespace site-a --set serviceName=firefox-vnc-server,imagePullPolicy=Never,imageTag=1.0.0-snapshot,basePort=30317,numOfPods=1 helm
