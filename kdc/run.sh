@@ -38,37 +38,55 @@ kadmin.local -q "addprinc -pw ${MASTER_PASSWORD} ${KADMIN_PRINCIPAL_FULL}"
 echo ""
 
 echo "========== Writing keytab to ${KEYTAB_DIR} ========== "
+
+# Set variables
+NAMENODE_FQDN=pegacorn-fhirplace-namenode-0.pegacorn-fhirplace-namenode.site-a.svc.cluster.local
+DATANODE_ALPHA_FQDN=pegacorn-fhirplace-datanode-alpha-0.pegacorn-fhirplace-datanode-alpha.site-a.svc.cluster.local
+DATANODE_BETA_FQDN=pegacorn-fhirplace-datanode-beta-0.pegacorn-fhirplace-datanode-beta.site-a.svc.cluster.local
+SPNEGO_NAMENODE=pegacorn-fhirplace-namenode.site-a
+SPNEGO_DATANODE_ALPHA=pegacorn-fhirplace-datanode-alpha.site-a
+SPNEGO_DATANODE_BETA=pegacorn-fhirplace-datanode-beta.site-a
+CLIENT_API_FQDN=pegacorn-fhirplace-bigdata-api-0.pegacorn-fhirplace-bigdata-api.site-a.svc.cluster.local
+
 # Namenode Keytab
-kadmin.local -q "add_principal -randkey  nn/pegacorn-fhirplace-namenode-0.pegacorn-fhirplace-namenode.site-a.svc.cluster.local@${REALM}"
-kadmin.local -q "ktadd -norandkey -k nn.service.keytab nn/pegacorn-fhirplace-namenode-0.pegacorn-fhirplace-namenode.site-a.svc.cluster.local"
-kadmin.local -q "add_principal -randkey  root/pegacorn-fhirplace-namenode-0.pegacorn-fhirplace-namenode.site-a.svc.cluster.local@${REALM}"
-kadmin.local -q "ktadd -norandkey -k nn.service.keytab root/pegacorn-fhirplace-namenode-0.pegacorn-fhirplace-namenode.site-a.svc.cluster.local"
+kadmin.local -q "add_principal -randkey  nn/${NAMENODE_FQDN}@${REALM}"
+kadmin.local -q "ktadd -norandkey -k nn.service.keytab nn/${NAMENODE_FQDN}"
+kadmin.local -q "add_principal -randkey  root/${NAMENODE_FQDN}@${REALM}"
+kadmin.local -q "ktadd -norandkey -k nn.service.keytab root/${NAMENODE_FQDN}"
 
 # Datanode alpha Keytab
-kadmin.local -q "add_principal -randkey  dn/pegacorn-fhirplace-datanode-alpha-0.pegacorn-fhirplace-datanode-alpha.site-a.svc.cluster.local@${REALM}"
-kadmin.local -q "ktadd -norandkey -k dna.service.keytab dn/pegacorn-fhirplace-datanode-alpha-0.pegacorn-fhirplace-datanode-alpha.site-a.svc.cluster.local"
-kadmin.local -q "add_principal -randkey  root/pegacorn-fhirplace-datanode-alpha-0.pegacorn-fhirplace-datanode-alpha.site-a.svc.cluster.local@${REALM}"
-kadmin.local -q "ktadd -norandkey -k dna.service.keytab root/pegacorn-fhirplace-datanode-alpha-0.pegacorn-fhirplace-datanode-alpha.site-a.svc.cluster.local"
+kadmin.local -q "add_principal -randkey  dn/${DATANODE_ALPHA_FQDN}@${REALM}"
+kadmin.local -q "ktadd -norandkey -k dna.service.keytab dn/${DATANODE_ALPHA_FQDN}"
+kadmin.local -q "add_principal -randkey  root/${DATANODE_ALPHA_FQDN}@${REALM}"
+kadmin.local -q "ktadd -norandkey -k dna.service.keytab root/${DATANODE_ALPHA_FQDN}"
 
 # Datanode beta Keytab
-kadmin.local -q "add_principal -randkey  bn/pegacorn-fhirplace-datanode-beta-0.pegacorn-fhirplace-datanode-beta.site-a.svc.cluster.local@${REALM}"
-kadmin.local -q "ktadd -norandkey -k dnb.service.keytab bn/pegacorn-fhirplace-datanode-beta-0.pegacorn-fhirplace-datanode-beta.site-a.svc.cluster.local"
-kadmin.local -q "add_principal -randkey  root/pegacorn-fhirplace-datanode-beta-0.pegacorn-fhirplace-datanode-beta.site-a.svc.cluster.local@${REALM}"
-kadmin.local -q "ktadd -norandkey -k dnb.service.keytab root/pegacorn-fhirplace-datanode-beta-0.pegacorn-fhirplace-datanode-beta.site-a.svc.cluster.local"
+kadmin.local -q "add_principal -randkey  bn/${DATANODE_BETA_FQDN}@${REALM}"
+kadmin.local -q "ktadd -norandkey -k dnb.service.keytab bn/${DATANODE_BETA_FQDN}"
+kadmin.local -q "add_principal -randkey  root/${DATANODE_BETA_FQDN}@${REALM}"
+kadmin.local -q "ktadd -norandkey -k dnb.service.keytab root/${DATANODE_BETA_FQDN}"
 
-# SPNEGO keytab
-kadmin.local -q "add_principal -randkey  HTTP/pegacorn-fhirplace-namenode-0.pegacorn-fhirplace-namenode.site-a.svc.cluster.local@${REALM}"
-kadmin.local -q "ktadd -norandkey -k http.service.keytab HTTP/pegacorn-fhirplace-namenode-0.pegacorn-fhirplace-namenode.site-a.svc.cluster.local"
+# SPNEGO keytab for namenode service
+kadmin.local -q "add_principal -randkey  HTTP/${SPNEGO_NAMENODE}@${REALM}"
+kadmin.local -q "ktadd -norandkey -k http.service.keytab HTTP/${SPNEGO_NAMENODE}"
 
-# KLB keytab
-kadmin.local -q "add_principal -randkey  HTTP/pegacorn-fhirplace-namenode.site-a@${REALM}"
-kadmin.local -q "ktadd -norandkey -k http.service.keytab HTTP/pegacorn-fhirplace-namenode.site-a"
+# SPNEGO keytab for datanode-alpha service
+kadmin.local -q "add_principal -randkey  HTTP/${SPNEGO_DATANODE_ALPHA}@${REALM}"
+kadmin.local -q "ktadd -norandkey -k http.service.keytab HTTP/${SPNEGO_DATANODE_ALPHA}"
+
+# SPNEGO keytab for datanode-beta service
+kadmin.local -q "add_principal -randkey  HTTP/${SPNEGO_DATANODE_BETA}@${REALM}"
+kadmin.local -q "ktadd -norandkey -k http.service.keytab HTTP/${SPNEGO_DATANODE_BETA}"
+
+# Local user keytab
+kadmin.local -q "add_principal -randkey yemie@${REALM}"
+kadmin.local -q "ktadd -norandkey -k user.service.keytab yemie"
 
 # Client Keytab
-kadmin.local -q "add_principal -randkey  fn/pegacorn-fhirplace-bigdata-api-0.pegacorn-fhirplace-bigdata-api.site-a.svc.cluster.local@${REALM}"
-kadmin.local -q "ktadd -norandkey -k client.service.keytab fn/pegacorn-fhirplace-bigdata-api-0.pegacorn-fhirplace-bigdata-api.site-a.svc.cluster.local"
-kadmin.local -q "add_principal -randkey  root/pegacorn-fhirplace-bigdata-api-0.pegacorn-fhirplace-bigdata-api.site-a.svc.cluster.local@${REALM}"
-kadmin.local -q "ktadd -norandkey -k client.service.keytab root/pegacorn-fhirplace-bigdata-api-0.pegacorn-fhirplace-bigdata-api.site-a.svc.cluster.local"
+kadmin.local -q "add_principal -randkey  fn/${CLIENT_API_FQDN}@${REALM}"
+kadmin.local -q "ktadd -norandkey -k client.service.keytab fn/${CLIENT_API_FQDN}"
+kadmin.local -q "add_principal -randkey  root/${CLIENT_API_FQDN}@${REALM}"
+kadmin.local -q "ktadd -norandkey -k client.service.keytab root/${CLIENT_API_FQDN}"
 echo ""
 
 echo "==================================================================================="
@@ -78,6 +96,7 @@ mv nn.service.keytab ${KEYTAB_DIR}
 mv dna.service.keytab ${KEYTAB_DIR}
 mv dnb.service.keytab ${KEYTAB_DIR}
 mv http.service.keytab ${KEYTAB_DIR}
+mv user.service.keytab ${KEYTAB_DIR}
 mv client.service.keytab ${KEYTAB_DIR}
 ls -lah ${KEYTAB_DIR}
 
@@ -91,6 +110,7 @@ printf "%b" "read_kt ${KEYTAB_DIR}/nn.service.keytab\nlist" | ktutil
 printf "%b" "read_kt ${KEYTAB_DIR}/dna.service.keytab\nlist" | ktutil
 printf "%b" "read_kt ${KEYTAB_DIR}/dnb.service.keytab\nlist" | ktutil
 printf "%b" "read_kt ${KEYTAB_DIR}/http.service.keytab\nlist" | ktutil
+printf "%b" "read_kt ${KEYTAB_DIR}/user.service.keytab\nlist" | ktutil
 printf "%b" "read_kt ${KEYTAB_DIR}/client.service.keytab\nlist" | ktutil
 echo ""
 
@@ -100,6 +120,7 @@ chmod 444 ${KEYTAB_DIR}/nn.service.keytab
 chmod 444 ${KEYTAB_DIR}/dna.service.keytab
 chmod 444 ${KEYTAB_DIR}/dnb.service.keytab
 chmod 444 ${KEYTAB_DIR}/http.service.keytab
+chmod 444 ${KEYTAB_DIR}/user.service.keytab
 chmod 444 ${KEYTAB_DIR}/client.service.keytab
 ls -lah ${KEYTAB_DIR}
 echo ""
