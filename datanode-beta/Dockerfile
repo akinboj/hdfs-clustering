@@ -41,11 +41,6 @@ ARG IMAGE_BUILD_TIMESTAMP
 ENV IMAGE_BUILD_TIMESTAMP=${IMAGE_BUILD_TIMESTAMP}
 RUN echo IMAGE_BUILD_TIMESTAMP=${IMAGE_BUILD_TIMESTAMP}
 
-ENV SERVER_ADDRESS=pegacorn-fhirplace-datanode-beta-0.pegacorn-fhirplace-datanode-beta.site-a.svc.cluster.local
-
-# Hadoop ports
-EXPOSE 9865 9866 9867
-
 COPY run.sh /run.sh
 RUN chmod a+x /run.sh
 

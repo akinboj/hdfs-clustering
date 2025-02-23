@@ -15,6 +15,10 @@ else
 fi
 echo ""
 
+# Set server name
+SERVER_ADDRESS=pegacorn-fhirplace-datanode-alpha-0.pegacorn-fhirplace-datanode-alpha.site-a.svc.cluster.local
+SPNEGO_LOADBALANCER=pegacorn-fhirplace-datanode-alpha.site-a
+
 # kerberos client
 sed -i "s/realmValue/${REALM}/g" /etc/krb5.conf
 sed -i "s/kdcserver/pegacorn-fhirplace-kdcserver-0.pegacorn-fhirplace-kdcserver.site-a.svc.cluster.local/g" /etc/krb5.conf
@@ -77,7 +81,7 @@ if [ "$MULTIHOMED_NETWORK" = "1" ]; then
     addProperty /etc/hadoop/core-site.xml hadoop.security.authentication kerberos
     addProperty /etc/hadoop/core-site.xml hadoop.security.authorization true
     # Specify the Kerberos Principal for HTTP access
-    addProperty /etc/hadoop/core-site.xml hadoop.http.authentication.kerberos.principal HTTP/${NAMENODE_HOST}@${REALM}
+    addProperty /etc/hadoop/core-site.xml hadoop.http.authentication.kerberos.principal HTTP/${SPNEGO_LOADBALANCER}@${REALM}
     addProperty /etc/hadoop/core-site.xml hadoop.http.authentication.kerberos.keytab ${KEYTAB_DIR}/http.service.keytab
     # Enable HTTPS and configure related settings
     addProperty /etc/hadoop/core-site.xml hadoop.ssl.server.conf ssl-server.xml
@@ -87,7 +91,6 @@ if [ "$MULTIHOMED_NETWORK" = "1" ]; then
     addProperty /etc/hadoop/core-site.xml hadoop.http.filter.initializers org.apache.hadoop.security.AuthenticationFilterInitializer,org.apache.hadoop.security.HttpCrossOriginFilterInitializer
     addProperty /etc/hadoop/core-site.xml hadoop.http.authentication.token.validity 36000
     addProperty /etc/hadoop/core-site.xml hadoop.http.authentication.cookie.domain ${KUBERNETES_SERVICE_NAME}.${KUBERNETES_NAMESPACE}
-    addProperty /etc/hadoop/core-site.xml hadoop.http.authentication.cookie.persistent true
     addProperty /etc/hadoop/core-site.xml hadoop.ssl.require.client.cert false
     addProperty /etc/hadoop/core-site.xml hadoop.ssl.hostname.verifier ALLOW_ALL
     addProperty /etc/hadoop/core-site.xml hadoop.http.cross-origin.enabled true
@@ -98,11 +101,10 @@ if [ "$MULTIHOMED_NETWORK" = "1" ]; then
     addProperty /etc/hadoop/core-site.xml fs.viewfs.overload.scheme.target.hdfs.impl org.apache.hadoop.hdfs.DistributedFileSystem
     # Other settings
     addProperty /etc/hadoop/core-site.xml hadoop.http.staticuser.user root
-    addProperty /etc/hadoop/core-site.xml hadoop.security.auth_to_local 'RULE:[2:$1/$2@$0]([ndbf]n/.*@REALM.TLD)s/.*/root/'
+    addProperty /etc/hadoop/core-site.xml hadoop.security.auth_to_local 'RULE:[2:$1/$2@$0]([ndbf]n/.*@REALM.TLD)s/.*/root/ RULE:[2:$1/$2@$0](HTTP/.*@REALM.TLD)s/.*/root/ DEFAULT'
 
     # HDFS
     addProperty /etc/hadoop/hdfs-site.xml dfs.replication 1
-    addProperty /etc/hadoop/hdfs-site.xml dfs.cluster.administrators *
     addProperty /etc/hadoop/hdfs-site.xml dfs.datanode.kerberos.principal dn/_HOST@${REALM}
     addProperty /etc/hadoop/hdfs-site.xml dfs.datanode.keytab.file ${KEYTAB_DIR}/dna.service.keytab
     addProperty /etc/hadoop/hdfs-site.xml dfs.block.access.token.enable true
@@ -117,9 +119,11 @@ if [ "$MULTIHOMED_NETWORK" = "1" ]; then
     addProperty /etc/hadoop/hdfs-site.xml dfs.encrypt.data.transfer true
     addProperty /etc/hadoop/hdfs-site.xml dfs.client.use.datanode.hostname true
     addProperty /etc/hadoop/hdfs-site.xml dfs.datanode.use.datanode.hostname true
+    addProperty /etc/hadoop/hdfs-site.xml dfs.cluster.administrators '*'
+    addProperty /etc/hadoop/hdfs-site.xml dfs.permissions.superusergroup supergroup
     addProperty /etc/hadoop/hdfs-site.xml dfs.data.transfer.protection privacy
-    addProperty /etc/hadoop/hdfs-site.xml dfs.namenode.kerberos.internal.spnego.principal HTTP/${NAMENODE_HOST}@${REALM}
-    addProperty /etc/hadoop/hdfs-site.xml dfs.web.authentication.kerberos.principal HTTP/${NAMENODE_HOST}@${REALM}
+    addProperty /etc/hadoop/hdfs-site.xml dfs.namenode.kerberos.internal.spnego.principal HTTP/${SPNEGO_LOADBALANCER}@${REALM}
+    addProperty /etc/hadoop/hdfs-site.xml dfs.web.authentication.kerberos.principal HTTP/${SPNEGO_LOADBALANCER}@${REALM}
     addProperty /etc/hadoop/hdfs-site.xml dfs.web.authentication.kerberos.keytab ${KEYTAB_DIR}/http.service.keytab
 fi
 

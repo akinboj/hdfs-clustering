@@ -30,6 +30,8 @@ RUN apt-get update && \
     dnsutils \
     procps \
     tzdata \
+    curl \
+    wget \
     && rm -rf /var/lib/apt/lists/*  # Clean up to reduce layer size
 
 # Kerberos and TLS configuration
@@ -44,11 +46,6 @@ COPY ssl-client.xml /etc/hadoop/ssl-client.xml
 ARG IMAGE_BUILD_TIMESTAMP
 ENV IMAGE_BUILD_TIMESTAMP=${IMAGE_BUILD_TIMESTAMP}
 RUN echo IMAGE_BUILD_TIMESTAMP=${IMAGE_BUILD_TIMESTAMP}
-
-ENV SERVER_ADDRESS=pegacorn-fhirplace-namenode-0.pegacorn-fhirplace-namenode.site-a.svc.cluster.local
-
-# Hadoop ports
-EXPOSE 9000 9820 9871
 
 COPY run.sh /run.sh
 RUN chmod a+x /run.sh

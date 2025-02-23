@@ -16,7 +16,6 @@ fi
 echo ""
 
 # kerberos client
-# echo ${MY_POD_IP} ${KUBERNETES_SERVICE_NAME}.${KUBERNETES_NAMESPACE} >> /etc/hosts
 sed -i "s/realmValue/${REALM}/g" /etc/krb5.conf
 sed -i "s/kdcserver/pegacorn-fhirplace-kdcserver-0.pegacorn-fhirplace-kdcserver.site-a.svc.cluster.local/g" /etc/krb5.conf
 sed -i "s/kdcadmin/pegacorn-fhirplace-kdcserver-0.pegacorn-fhirplace-kdcserver.site-a.svc.cluster.local/g" /etc/krb5.conf
@@ -33,13 +32,30 @@ rm -rf /var/lib/apt/lists/*
 # Create http signature file
 openssl rand -base64 256 > ${CERTS}/hadoop-http-auth-signature-secret
 
+# Set server name
+SERVER_ADDRESS=pegacorn-fhirplace-namenode-0.pegacorn-fhirplace-namenode.site-a.svc.cluster.local
+
 echo ""
 echo "==== Authenticating to realm ==============================================================="
 echo "============================================================================================"
+export KRB5CCNAME=/tmp/krb5cc_nn
 KRB5_TRACE=/dev/stderr kinit -f nn/${SERVER_ADDRESS}@${REALM} -kt ${KEYTAB_DIR}/nn.service.keytab -V &
 wait -n
 echo "NameNode TGT completed."
 echo ""
+
+echo ""
+echo "==== Authenticating to realm ==============================================================="
+echo "============================================================================================"
+export KRB5CCNAME=/tmp/krb5cc_http
+KRB5_TRACE=/dev/stderr kinit -f HTTP/${KUBERNETES_SERVICE_NAME}.${KUBERNETES_NAMESPACE}@${REALM} -kt ${KEYTAB_DIR}/http.service.keytab -V &
+wait -n
+echo "HTTP TGT completed."
+echo ""
+
+echo 'export KRB5CCNAME=/tmp/krb5cc_nn' >> /etc/profile
+echo 'export KRB5CCNAME=/tmp/krb5cc_nn' >> ~/.bashrc
+source ~/.bashrc
 
 ### Start entrypoint.sh
 ### https://github.com/big-data-europe/docker-hadoop/blob/master/base/entrypoint.sh
@@ -84,17 +100,17 @@ if [ "$MULTIHOMED_NETWORK" = "1" ]; then
     addProperty /etc/hadoop/core-site.xml hadoop.security.authentication kerberos
     addProperty /etc/hadoop/core-site.xml hadoop.security.authorization true
     # Specify the Kerberos Principal for HTTP access
-    addProperty /etc/hadoop/core-site.xml hadoop.http.authentication.kerberos.principal HTTP/_HOST@${REALM}
+    addProperty /etc/hadoop/core-site.xml hadoop.http.authentication.kerberos.principal HTTP/${KUBERNETES_SERVICE_NAME}.${KUBERNETES_NAMESPACE}@${REALM}
     addProperty /etc/hadoop/core-site.xml hadoop.http.authentication.kerberos.keytab ${KEYTAB_DIR}/http.service.keytab
     # Enable HTTPS and configure related settings
     addProperty /etc/hadoop/core-site.xml hadoop.ssl.server.conf ssl-server.xml
     addProperty /etc/hadoop/core-site.xml hadoop.ssl.client.conf ssl-client.xml
     addProperty /etc/hadoop/core-site.xml hadoop.ssl.keystores.factory.class org.apache.hadoop.security.ssl.FileBasedKeyStoresFactory
     addProperty /etc/hadoop/core-site.xml hadoop.http.authentication.type kerberos
+    addProperty /etc/hadoop/core-site.xml hadoop.http.authentication.simple.anonymous.allowed false
     addProperty /etc/hadoop/core-site.xml hadoop.http.filter.initializers org.apache.hadoop.security.AuthenticationFilterInitializer,org.apache.hadoop.security.HttpCrossOriginFilterInitializer
     addProperty /etc/hadoop/core-site.xml hadoop.http.authentication.token.validity 36000
-    addProperty /etc/hadoop/core-site.xml hadoop.http.authentication.cookie.domain ${KUBERNETES_SERVICE_NAME}.${KUBERNETES_NAMESPACE}
-    addProperty /etc/hadoop/core-site.xml hadoop.http.authentication.cookie.persistent true
+    addProperty /etc/hadoop/core-site.xml hadoop.http.authentication.cookie.domain ${KUBERNETES_NAMESPACE}
     addProperty /etc/hadoop/core-site.xml hadoop.ssl.require.client.cert false
     addProperty /etc/hadoop/core-site.xml hadoop.ssl.hostname.verifier ALLOW_ALL
     addProperty /etc/hadoop/core-site.xml hadoop.http.cross-origin.enabled true
@@ -105,7 +121,7 @@ if [ "$MULTIHOMED_NETWORK" = "1" ]; then
     addProperty /etc/hadoop/core-site.xml fs.viewfs.overload.scheme.target.hdfs.impl org.apache.hadoop.hdfs.DistributedFileSystem
     # Other settings
     addProperty /etc/hadoop/core-site.xml hadoop.http.staticuser.user	root
-    addProperty /etc/hadoop/core-site.xml hadoop.security.auth_to_local 'RULE:[2:$1/$2@$0]([ndbf]n/.*@REALM.TLD)s/.*/root/'
+    addProperty /etc/hadoop/core-site.xml hadoop.security.auth_to_local 'RULE:[2:$1/$2@$0]([ndbf]n/.*@REALM.TLD)s/.*/root/ RULE:[2:$1/$2@$0](HTTP/.*@REALM.TLD)s/.*/root/ DEFAULT'
 
     # HDFS
     addProperty /etc/hadoop/hdfs-site.xml dfs.namenode.rpc-bind-host ${SERVER_ADDRESS}
@@ -117,18 +133,19 @@ if [ "$MULTIHOMED_NETWORK" = "1" ]; then
     addProperty /etc/hadoop/hdfs-site.xml dfs.encrypt.data.transfer true
     addProperty /etc/hadoop/hdfs-site.xml dfs.block.access.token.enable true
     addProperty /etc/hadoop/hdfs-site.xml dfs.replication 1
-    addProperty /etc/hadoop/hdfs-site.xml dfs.cluster.administrators *
     addProperty /etc/hadoop/hdfs-site.xml dfs.datanode.address 0.0.0.0:9866
     addProperty /etc/hadoop/hdfs-site.xml dfs.datanode.https.address 0.0.0.0:9865
     addProperty /etc/hadoop/hdfs-site.xml dfs.datanode.ipc.address 0.0.0.0:9867
     addProperty /etc/hadoop/hdfs-site.xml dfs.namenode.https-address ${SERVER_ADDRESS}:9871
     addProperty /etc/hadoop/hdfs-site.xml dfs.client.https.need-auth false
     addProperty /etc/hadoop/hdfs-site.xml dfs.data.transfer.protection privacy
+    addProperty /etc/hadoop/hdfs-site.xml dfs.cluster.administrators '*'
+    addProperty /etc/hadoop/hdfs-site.xml dfs.permissions.superusergroup supergroup
     addProperty /etc/hadoop/hdfs-site.xml dfs.http.policy HTTPS_ONLY
     addProperty /etc/hadoop/hdfs-site.xml dfs.namenode.kerberos.principal nn/_HOST@${REALM}
     addProperty /etc/hadoop/hdfs-site.xml dfs.namenode.keytab.file ${KEYTAB_DIR}/nn.service.keytab
-    addProperty /etc/hadoop/hdfs-site.xml dfs.namenode.kerberos.internal.spnego.principal HTTP/_HOST@${REALM}
-    addProperty /etc/hadoop/hdfs-site.xml dfs.web.authentication.kerberos.principal HTTP/_HOST@${REALM}
+    addProperty /etc/hadoop/hdfs-site.xml dfs.namenode.kerberos.internal.spnego.principal HTTP/${KUBERNETES_SERVICE_NAME}.${KUBERNETES_NAMESPACE}@${REALM}
+    addProperty /etc/hadoop/hdfs-site.xml dfs.web.authentication.kerberos.principal HTTP/${KUBERNETES_SERVICE_NAME}.${KUBERNETES_NAMESPACE}@${REALM}
     addProperty /etc/hadoop/hdfs-site.xml dfs.web.authentication.kerberos.keytab ${KEYTAB_DIR}/http.service.keytab
 fi
 
