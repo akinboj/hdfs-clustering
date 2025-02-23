@@ -14,10 +14,7 @@ docker build --rm --build-arg IMAGE_BUILD_TIMESTAMP="$(date '+%Y-%m-%d %H:%M:%S'
 helm upgrade pegacorn-fhirplace-kdcserver-site-a --install --namespace site-a --set serviceName=pegacorn-fhirplace-kdcserver,imagePullPolicy=Never,hostPathKeytab=/Users/yemie/dev/data/kdc-keytab,imageTag=1.0.0-snapshot,numOfPods=1 helm
 
 # Deploy Master Node (NameNode) - <Stateful set to persist podname for domain authentication>
-# A Stateful pod can translate the hadoop configurations for SPNEGO authentication: "HTTP/_HOST"
-# HOST is the hostname of the pod which MUST be the same as the Namenode principal hostname
 # cd into 'namenode' folder
-
 docker build --rm --build-arg IMAGE_BUILD_TIMESTAMP="$(date '+%Y-%m-%d %H:%M:%S')" -t pegacorn-fhirplace-namenode:1.0.0-snapshot --file Dockerfile .
 
 helm upgrade pegacorn-fhirplace-namenode-site-a --install --namespace site-a --set serviceName=pegacorn-fhirplace-namenode,imagePullPolicy=Never,hostPathNamenode=/Users/yemie/dev/data/hadoop-namenode,hostPathKeytab=/Users/yemie/dev/data/kdc-keytab,hostPathConfig=/Users/yemie/dev/data/certificates,clusterName=Integration,imageTag=1.0.0-snapshot,numOfPods=1 helm
@@ -49,7 +46,8 @@ brew install krb5
     .site-a = REALM.TLD
     site-a = REALM.TLD
 
-## To access the Namenode Web UI in browsers, we need to configure them for SPNEGO authentication
+## To access the Namenode Web UI in browsers, we need to configure them for SPNEGO authentication::
+
 *** Start Firefox SPNEGO setup: ***
 In the address bar, type - 'about:config' and configure the settings below:
 network.negotiate-auth.trusted-uris -> .site-a
@@ -83,7 +81,6 @@ klist
 |  Issued                Expires               Principal                                        |  
 | Feb 22 14:32:59 2025  Feb 23 00:32:59 2025  krbtgt/REALM.TLD@REALM.TLD                        |
 | Feb 22 14:33:59 2025  Feb 23 00:33:59 2025  HTTP/pegacorn-fhirplace-namenode.site-a@REALM.TLD |
-
 *** End Firefox SPNEGO setup: ***
 
 *** Start Chrome SPNEGO setup: ***
@@ -107,8 +104,27 @@ https://pegacorn-fhirplace-namenode.site-a:32410
 
 ## Command when troubleshooting Chrome kerberos auth:
 # /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --auth-server-whitelist="*.site-a" --auth-negotiate-delegate-whitelist="*.site-a" --enable-logging=stderr --v=1
-
 *** End Chrome SPNEGO setup: ***
+
+*** Start Microsoft Edge SPNEGO setup: ***
+# In terminal execute:
+defaults write com.microsoft.Edge AuthServerAllowlist "*.site-a"
+defaults write com.microsoft.Edge AuthNegotiateDelegateAllowlist "*.site-a"
+
+# You can confirm the setting is applied in Edge by running:
+defaults read com.microsoft.Edge AuthServerAllowlist
+defaults read com.microsoft.Edge AuthNegotiateDelegateAllowlist
+(They should both output *.site-a)
+* Restart Edge
+
+# Kinit user keytab
+kdestroy
+kinit -kt ~/dev/data/kdc-keytab/user.service.keytab yemie@REALM.TLD
+
+# In Edge browser:
+URL === 
+https://pegacorn-fhirplace-namenode.site-a:32410
+*** End Microsoft Edge SPNEGO setup: ***
 
 # Trigger SPNEGO authentication using curl. It does not work in Alpine based images. Works in Debian
 kdestroy
@@ -124,11 +140,14 @@ curl -L -v --negotiate -u : https://pegacorn-fhirplace-datanode-beta.site-a:3261
 # Docker issue raised for SPNEGO curl in Alpine
 https://github.com/curl/curl-docker/issues/51
 
-# Some browsers e.g. Edge, Safari may require the cookie to be manually set if SPNEGO does not auto-negotiate.
+# Some browsers e.g. Safari may require the curl command to be executed first or the cookie to be manually set if SPNEGO does not auto-negotiate.
+# The likely culprit is the way macos handles WWW-Authenticate: Negotiate from localhost which impersonates our domain
 # Retrieve the hadoop.auth credentials from the curl command executed on the host machine above (curl -L -v --negotiate...).
-# In Edge, go to Console in Web developer tools and set cookie -- it should be similar to the below:
+# In Safari, go to Console in Web developer tools and set cookie -- it should be similar to the below:
 
 document.cookie="hadoop.auth=u=yemie&p=yemie@REALM.TLD&t=kerberos&e=1740174529093&s=WCdmqRrrVLiHFCBE3DTmYnarSZdqbeKJmIAvzeKrdmo=; path=/; Secure"
+
+** Running the curl command alone may suffice as curl triggers a ticket fetch or uses a cached one, then sets the hadoop.auth cookie, which Safari might piggyback on afterward.
 
 ========================================================================================
 # Datanode(s) Deployment
@@ -144,11 +163,10 @@ helm upgrade pegacorn-fhirplace-datanode-beta-site-a --install --namespace site-
 
 # Avoid a URL re-direct
 https://pegacorn-fhirplace-datanode-alpha.site-a:32510/datanode.html
-
 # The below is gotten if SPNEGO authentication is not configured.
 " HTTP 401 error - authentication required ". This is expected and confirms the DFS cannot be accessed without adequate SPNEGO authentication.
 
-# Please follow the browser steps above to configure SPNEGO authentication
+*** Please follow the browser steps above to configure SPNEGO authentication if you have not ***
 
 URL (datanode-alpha)===
 https://pegacorn-fhirplace-datanode-alpha.site-a:32510/datanode.html
