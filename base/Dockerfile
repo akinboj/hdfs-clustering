@@ -1,35 +1,22 @@
-# FROM debian:buster
+FROM eclipse-temurin:21-alpine
 
-#Docker running on macOS with an ARM64 (Apple Silicon) CPU.
-FROM arm64v8/debian:buster-slim
+RUN apk update
 
-# Install prerequisites
-# We create the /usr/share/man/man1 and /usr/share/man/man2 directories to avoid dependency issues during the OpenJDK installation.
-RUN apt-get update && apt-get install -y ca-certificates-java && \
-    mkdir -p /usr/share/man/man1 /usr/share/man/man2
-
-# Install OpenJDK 11 and other packages
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-      openjdk-11-jdk \
-      net-tools \
-      curl \
-      netcat \
-      gnupg \
-      libsnappy-dev \
-    && rm -rf /var/lib/apt/lists/*
-
-# (for 64-bit systems)      
-# ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64/
-
-# (for ARM64 systems)
-ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk-arm64/
+# Install packages
+RUN apk add --no-cache curl \
+    ca-certificates \
+    gnupg \
+    perl \
+    bash \
+    tzdata \ 
+    && rm -rf /var/cache/apk/*
 
 RUN curl -O https://dist.apache.org/repos/dist/release/hadoop/common/KEYS
 
 RUN gpg --import KEYS
 
-ENV HADOOP_VERSION 3.4.0
-ENV HADOOP_URL https://www.apache.org/dist/hadoop/common/hadoop-$HADOOP_VERSION/hadoop-$HADOOP_VERSION.tar.gz
+ENV HADOOP_VERSION=3.4.0
+ENV HADOOP_URL=https://www.apache.org/dist/hadoop/common/hadoop-$HADOOP_VERSION/hadoop-$HADOOP_VERSION.tar.gz
 
 RUN set -x \
     && curl -fSL "$HADOOP_URL" -o /tmp/hadoop.tar.gz \
@@ -45,4 +32,4 @@ RUN mkdir /opt/hadoop-$HADOOP_VERSION/logs
 ENV HADOOP_HOME=/opt/hadoop-$HADOOP_VERSION
 ENV HADOOP_CONF_DIR=/etc/hadoop
 ENV USER=root
-ENV PATH $HADOOP_HOME/bin/:$PATH
+ENV PATH=$HADOOP_HOME/bin/:$PATH

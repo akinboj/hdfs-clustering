@@ -1,0 +1,31 @@
+FROM alpine:latest
+
+ARG IMAGE_BUILD_TIMESTAMP
+ENV IMAGE_BUILD_TIMESTAMP=${IMAGE_BUILD_TIMESTAMP}
+RUN echo IMAGE_BUILD_TIMESTAMP=${IMAGE_BUILD_TIMESTAMP}
+
+# Install Kerberos client and admin tools
+RUN apk add --no-cache krb5 \
+    krb5-server \
+    krb5-libs \
+    bash \
+    curl \
+    tzdata \
+    && rm -rf /var/cache/apk/*
+
+ENV HDFS_KEYTAB_DIR=/etc/security/hdfs-keytabs
+ENV ADMIN_KEYTAB_DIR=/etc/security/admin-keytab
+ENV TZ="Australia/Sydney"
+
+RUN mkdir -p /etc/security/admin-keytab
+RUN mkdir -p /etc/security/hdfs-keytabs
+RUN mkdir -p /var/log/kerberos
+
+# Copy Kerberos configuration
+COPY krb5.conf /etc/krb5.conf
+
+# Copy keytab generation script
+COPY generate-keytab.sh /generate-keytab.sh
+RUN chmod +x /generate-keytab.sh
+
+CMD ["/generate-keytab.sh"]

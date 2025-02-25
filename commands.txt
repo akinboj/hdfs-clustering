@@ -13,9 +13,11 @@ docker build --rm --build-arg IMAGE_BUILD_TIMESTAMP="$(date '+%Y-%m-%d %H:%M:%S'
 
 helm upgrade pegacorn-fhirplace-kdcserver-site-a --install --namespace site-a --set serviceName=pegacorn-fhirplace-kdcserver,imagePullPolicy=Never,hostPathKeytab=/Users/yemie/dev/data/kdc-keytab,imageTag=1.0.0-snapshot,numOfPods=1 helm
 
-# Deploy Master Node (NameNode) - <Stateful set to persist podname for domain authentication>
+# Deploy Master Node (NameNode) --
 # cd into 'namenode' folder
 docker build --rm --build-arg IMAGE_BUILD_TIMESTAMP="$(date '+%Y-%m-%d %H:%M:%S')" -t pegacorn-fhirplace-namenode:1.0.0-snapshot --file Dockerfile .
+# Build side-car for dynamic keytab generation
+docker build --rm --build-arg IMAGE_BUILD_TIMESTAMP="$(date '+%Y-%m-%d %H:%M:%S')" -t kerberos-sidecar:1.0.0-snapshot --file Dockerfile.sidecar .
 
 helm upgrade pegacorn-fhirplace-namenode-site-a --install --namespace site-a --set serviceName=pegacorn-fhirplace-namenode,imagePullPolicy=Never,hostPathNamenode=/Users/yemie/dev/data/hadoop-namenode,hostPathKeytab=/Users/yemie/dev/data/kdc-keytab,hostPathConfig=/Users/yemie/dev/data/certificates,clusterName=Integration,imageTag=1.0.0-snapshot,numOfPods=1 helm
 
@@ -82,6 +84,7 @@ klist
 | Feb 22 14:32:59 2025  Feb 23 00:32:59 2025  krbtgt/REALM.TLD@REALM.TLD                        |
 | Feb 22 14:33:59 2025  Feb 23 00:33:59 2025  HTTP/pegacorn-fhirplace-namenode.site-a@REALM.TLD |
 *** End Firefox SPNEGO setup: ***
+------------------------------------------------------------------------------------
 
 *** Start Chrome SPNEGO setup: ***
 # In terminal execute:
@@ -104,8 +107,9 @@ https://pegacorn-fhirplace-namenode.site-a:32410
 
 ## Command when troubleshooting Chrome kerberos auth:
 # /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --auth-server-whitelist="*.site-a" --auth-negotiate-delegate-whitelist="*.site-a" --enable-logging=stderr --v=1
-*** End Chrome SPNEGO setup: ***
 
+*** End Chrome SPNEGO setup: ***
+------------------------------------------------------------------------------------
 *** Start Microsoft Edge SPNEGO setup: ***
 # In terminal execute:
 defaults write com.microsoft.Edge AuthServerAllowlist "*.site-a"
@@ -126,7 +130,12 @@ URL ===
 https://pegacorn-fhirplace-namenode.site-a:32410
 *** End Microsoft Edge SPNEGO setup: ***
 
-# Trigger SPNEGO authentication using curl. It does not work in Alpine based images. Works in Debian
+======== End Steps to access namenode UI over HTTPS and Kerberos authentication in the Browser ==========
+
+========================================================================================
+========================================================================================
+
+## Trigger SPNEGO authentication using curl. It does not work in Alpine based images. **Works in Debian based images and host machine
 kdestroy
 kinit -kt ~/dev/data/kdc-keytab/user.service.keytab yemie@REALM.TLD
 curl -L -v --negotiate -u : https://pegacorn-fhirplace-namenode.site-a:32410/
@@ -151,15 +160,20 @@ document.cookie="hadoop.auth=u=yemie&p=yemie@REALM.TLD&t=kerberos&e=174017452909
 
 ========================================================================================
 # Datanode(s) Deployment
-# Retrieve CLUSTER-IP of NameNode service
-# kubectl get svc pegacorn-fhirplace-namenode -n site-a --no-headers | awk {'print $3'} <No longer required for stateful set>
+========================================================================================
 
-# Deploy Worker Nodes (DataNodes) - <Stateful set to persist podname for domain authentication>
+# Deploy Worker Nodes (DataNodes) --
 docker build --rm --build-arg IMAGE_BUILD_TIMESTAMP="$(date '+%Y-%m-%d %H:%M:%S')" -t pegacorn-fhirplace-datanode-alpha:1.0.0-snapshot --file Dockerfile .
-helm upgrade pegacorn-fhirplace-datanode-alpha-site-a --install --namespace site-a --set serviceName=pegacorn-fhirplace-datanode-alpha,imagePullPolicy=Never,namenodeHost=pegacorn-fhirplace-namenode-0.pegacorn-fhirplace-namenode.site-a.svc.cluster.local,hostPathDatanode=/Users/yemie/dev/data/hadoop-datanode-alpha,hostPathKeytab=/Users/yemie/dev/data/kdc-keytab,hostPathConfig=/Users/yemie/dev/data/certificates,imageTag=1.0.0-snapshot,numOfPods=1 helm
+# Build side-car for dynamic keytab generation
+docker build --rm --build-arg IMAGE_BUILD_TIMESTAMP="$(date '+%Y-%m-%d %H:%M:%S')" -t kerberos-sidecar-dna:1.0.0-snapshot --file Dockerfile.sidecar .
+
+helm upgrade pegacorn-fhirplace-datanode-alpha-site-a --install --namespace site-a --set serviceName=pegacorn-fhirplace-datanode-alpha,imagePullPolicy=Never,namenodeHost=pegacorn-fhirplace-namenode.site-a.svc.cluster.local,hostPathDatanode=/Users/yemie/dev/data/hadoop-datanode-alpha,hostPathKeytab=/Users/yemie/dev/data/kdc-keytab,hostPathConfig=/Users/yemie/dev/data/certificates,imageTag=1.0.0-snapshot,numOfPods=1 helm
 
 docker build --rm --build-arg IMAGE_BUILD_TIMESTAMP="$(date '+%Y-%m-%d %H:%M:%S')" -t pegacorn-fhirplace-datanode-beta:1.0.0-snapshot --file Dockerfile .
-helm upgrade pegacorn-fhirplace-datanode-beta-site-a --install --namespace site-a --set serviceName=pegacorn-fhirplace-datanode-beta,imagePullPolicy=Never,namenodeHost=pegacorn-fhirplace-namenode-0.pegacorn-fhirplace-namenode.site-a.svc.cluster.local,hostPathDatanode=/Users/yemie/dev/data/hadoop-datanode-beta,hostPathKeytab=/Users/yemie/dev/data/kdc-keytab,hostPathConfig=/Users/yemie/dev/data/certificates,imageTag=1.0.0-snapshot,numOfPods=1 helm
+# Build side-car for dynamic keytab generation
+docker build --rm --build-arg IMAGE_BUILD_TIMESTAMP="$(date '+%Y-%m-%d %H:%M:%S')" -t kerberos-sidecar-dnb:1.0.0-snapshot --file Dockerfile.sidecar .
+
+helm upgrade pegacorn-fhirplace-datanode-beta-site-a --install --namespace site-a --set serviceName=pegacorn-fhirplace-datanode-beta,imagePullPolicy=Never,namenodeHost=pegacorn-fhirplace-namenode.site-a.svc.cluster.local,hostPathDatanode=/Users/yemie/dev/data/hadoop-datanode-beta,hostPathKeytab=/Users/yemie/dev/data/kdc-keytab,hostPathConfig=/Users/yemie/dev/data/certificates,imageTag=1.0.0-snapshot,numOfPods=1 helm
 
 # Avoid a URL re-direct
 https://pegacorn-fhirplace-datanode-alpha.site-a:32510/datanode.html
@@ -174,10 +188,3 @@ https://pegacorn-fhirplace-datanode-alpha.site-a:32510/datanode.html
 
 URL (datanode-beta)===
 https://pegacorn-fhirplace-datanode-beta.site-a:32610/datanode.html
-
-=============================================================================
-TDL: VNC Server
-
-docker build --rm --build-arg IMAGE_BUILD_TIMESTAMP="$(date '+%Y-%m-%d %H:%M:%S')" -t firefox-vnc-server:1.0.0-snapshot --file Dockerfile .
-
-helm upgrade firefox-vnc-server-site-a --install --namespace site-a --set serviceName=firefox-vnc-server,imagePullPolicy=Never,imageTag=1.0.0-snapshot,basePort=30317,numOfPods=1 helm
