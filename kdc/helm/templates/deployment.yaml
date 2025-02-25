@@ -1,6 +1,6 @@
 ---
 apiVersion: apps/v1 
-kind: StatefulSet
+kind: Deployment
 metadata:
   annotations:
     fabric8.io/metrics-path: dashboard/file/camel-routes.json/?var-project={{ .Values.serviceName }}&var-version={{ .Values.imageTag }}
@@ -9,7 +9,6 @@ metadata:
     version: "{{ .Values.imageTag }}"
   name: {{ .Values.serviceName }}
 spec:
-  serviceName: {{ .Values.serviceName }}
   replicas: {{ .Values.numOfPods | default 2 }}
   revisionHistoryLimit: 2
   selector:
