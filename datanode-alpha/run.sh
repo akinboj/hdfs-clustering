@@ -138,7 +138,7 @@ if [ "$MULTIHOMED_NETWORK" = "1" ]; then
     addProperty /etc/hadoop/core-site.xml hadoop.security.auth_to_local 'RULE:[2:$1/$2@$0]([ndbf]n/.*@REALM.TLD)s/.*/root/ RULE:[2:$1/$2@$0](HTTP/.*@REALM.TLD)s/.*/root/ DEFAULT'
 
     # HDFS
-    addProperty /etc/hadoop/hdfs-site.xml dfs.replication 1
+    addProperty /etc/hadoop/hdfs-site.xml dfs.replication 2
     addProperty /etc/hadoop/hdfs-site.xml dfs.datanode.kerberos.principal dn/_HOST@${REALM}
     addProperty /etc/hadoop/hdfs-site.xml dfs.datanode.keytab.file ${HDFS_KEYTAB_DIR}/dna.service.keytab
     addProperty /etc/hadoop/hdfs-site.xml dfs.block.access.token.enable true
